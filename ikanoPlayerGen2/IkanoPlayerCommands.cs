@@ -45,7 +45,7 @@ namespace ikanoPlayerGen2
         public static void GetReplyThreadBody()
         {
             //フォローしている人だけ取得
-            var ids = IkanoPlayerTokens.Friends.Ids(screen_name: "ymduu");
+            var ids = IkanoPlayerTokens.Friends.Ids(screen_name: Constants.TWITTER_BOT_SCREEN_NAME);
             List<Int64> idList = ids.ToList<Int64>();
 
             foreach (var m in IkanoPlayerTokens.Streaming.Filter(follow: idList).OfType<CoreTweet.Streaming.StatusMessage>().Select(x => x.Status))

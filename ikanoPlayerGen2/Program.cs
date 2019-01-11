@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace ikanoPlayerGen2
 {
@@ -10,9 +11,15 @@ namespace ikanoPlayerGen2
     {
         static void Main(string[] args)
         {
-            //IkanoPlayerCommands.GetAuthInfo();
             IkanoPlayerCommands.Init();
+
             IkanoPlayerCommands.GetReplyThreadBody();
+
+            var twitterTask = Task.Run(() =>
+            {
+                IkanoPlayerCommands.GetReplyThreadBody();
+            });
+            
         }
     }
 }
