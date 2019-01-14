@@ -64,5 +64,15 @@ namespace ikanoPlayerGen2
             }
 
         }
+
+        /// <summary>
+        /// テスト用、パラメータをechoするだけ
+        /// </summary>
+        /// <returns>空白区切りのパラメータ</returns>
+        [Command("echoParams")]
+        public async Task EchoParams(string param1, string param2, string param3)
+        {
+            await Context.Channel.SendMessageAsync($"these are params{param1}, {param2}, {param3}");
+        }
     }
 }
