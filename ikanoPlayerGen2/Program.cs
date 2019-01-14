@@ -25,6 +25,7 @@ namespace ikanoPlayerGen2
 
         public async Task MainAsync()
         {
+
             IkanoPlayerCommands.Init();
 
             //IkanoPlayerCommands.GetReplyThreadBody();
