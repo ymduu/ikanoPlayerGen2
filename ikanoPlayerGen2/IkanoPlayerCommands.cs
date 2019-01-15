@@ -4,17 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
-using System.Collections.Generic;
 using CoreTweet;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using System.Linq;
 
 namespace ikanoPlayerGen2
 {
+    [Group("ikanoplayer")]
     public class IkanoPlayerCommands : ModuleBase
     {
         private static Tokens IkanoPlayerTokens;
+        private static IkanoPlayerDb Db = new IkanoPlayerDb();
 
         //認証情報取得
         public static void GetAuthInfo()
@@ -73,6 +75,33 @@ namespace ikanoPlayerGen2
         public async Task EchoParams(string param1, string param2, string param3)
         {
             await Context.Channel.SendMessageAsync($"these are params{param1}, {param2}, {param3}");
+        }
+
+        [Command("add")]
+        public async Task Add(string twitterId)
+        {
+            //AuthorのユーザーID取得
+            Discord.IGuildUser user = (Discord.IGuildUser)Context.Message.Author;
+            Console.WriteLine(user.Nickname + " Added.");
+            Db.AddUser(twitterId, user.Nickname, user.Id.ToString(), Context.Guild.Id.ToString());
+
+            await ReplyAsync(String.Format("user added. Twitter: {0} Nickname: {1} Id: {2}", twitterId, user.Nickname, user.Id.ToString()));
+        }
+
+        [Command("add")]
+        public async Task Add(string twitterId, string nickname)
+        {
+            //NicknameのユーザーID取得、nicknameがユニークである想定、そうでなかったら動作未定義
+            Discord.IGuild guild = Context.Guild;
+            var list = await guild.GetUsersAsync();
+            var user = list.Where(addUser => addUser.Nickname == nickname || addUser.Username == nickname).First();
+
+            string dbName = user.Nickname == null ? user.Username : user.Nickname;
+
+            Console.WriteLine(dbName + " Added.");
+            Db.AddUser(twitterId, dbName, user.Id.ToString(), Context.Guild.Id.ToString());
+
+            await ReplyAsync(String.Format("user added. Twitter: {0} Nickname: {1} Id: {2}", twitterId, dbName, user.Id.ToString()));
         }
     }
 }

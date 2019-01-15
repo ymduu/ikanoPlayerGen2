@@ -29,21 +29,23 @@ namespace ikanoPlayerGen2
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "twitter_id TEXT NOT NULL," +
                     "discord_display_name TEXT NOT NULL," +
-                    "discord_id TEXT NOT NULL)";
+                    "discord_id TEXT NOT NULL," +
+                    "discord_server_id TEXT NOT NULL)";
                     
                 cmd.ExecuteNonQuery();
             }
 
         }
 
-        public void AddUser(string twitterId, string discordDisplayName, string discordId)
+        public void AddUser(string twitterId, string discordDisplayName, string discordId, string discordServerId)
         {
             using (var cmd = new SQLiteCommand(Connection))
             {
-                cmd.CommandText = "INSERT INTO ikanoplayer_user(twitter_id, discord_display_name, discord_id) VALUES(:twitterId, :discordDisplayName, :discordId)";
+                cmd.CommandText = "INSERT INTO ikanoplayer_user(twitter_id, discord_display_name, discord_id, discord_server_id) VALUES(:twitterId, :discordDisplayName, :discordId, :discordServerId)";
                 cmd.Parameters.Add("twitterId", System.Data.DbType.String).Value = twitterId;
                 cmd.Parameters.Add("discordDisplayName", System.Data.DbType.String).Value = discordDisplayName;
                 cmd.Parameters.Add("discordId", System.Data.DbType.String).Value = discordId;
+                cmd.Parameters.Add("discordServerId", System.Data.DbType.String).Value = discordServerId;
 
                 cmd.ExecuteNonQuery();
             }
