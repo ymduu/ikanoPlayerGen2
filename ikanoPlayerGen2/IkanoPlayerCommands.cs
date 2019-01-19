@@ -8,7 +8,7 @@ using CoreTweet;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
-using System.Linq;
+
 
 namespace ikanoPlayerGen2
 {
@@ -67,6 +67,21 @@ namespace ikanoPlayerGen2
 
         }
 
+        public async Task<Discord.IGuildUser> GetUserFromNickname(Discord.IGuild guild, string nickname)
+        {
+            //NicknameのユーザーID取得、nicknameがユニークである想定、そうでなかったら動作未定義
+            var list = await guild.GetUsersAsync();
+            try
+            {
+                var user = list.Where(addUser => addUser.Nickname == nickname || addUser.Username == nickname).First();
+                return user;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         /// <summary>
         /// テスト用、パラメータをechoするだけ
         /// </summary>
@@ -82,26 +97,83 @@ namespace ikanoPlayerGen2
         {
             //AuthorのユーザーID取得
             Discord.IGuildUser user = (Discord.IGuildUser)Context.Message.Author;
+            string dbName = user.Nickname == null ? user.Username : user.Nickname;
+            IResult result = Db.AddUser(twitterId, dbName, user.Id.ToString(), Context.Guild.Id.ToString());
+            if(!result.IsSuccess)
+            {
+                await ReplyAsync(result.ErrorReason);
+                return;
+            }
             Console.WriteLine(user.Nickname + " Added.");
-            Db.AddUser(twitterId, user.Nickname, user.Id.ToString(), Context.Guild.Id.ToString());
-
             await ReplyAsync(String.Format("user added. Twitter: {0} Nickname: {1} Id: {2}", twitterId, user.Nickname, user.Id.ToString()));
         }
 
         [Command("add")]
         public async Task Add(string twitterId, string nickname)
         {
-            //NicknameのユーザーID取得、nicknameがユニークである想定、そうでなかったら動作未定義
-            Discord.IGuild guild = Context.Guild;
-            var list = await guild.GetUsersAsync();
-            var user = list.Where(addUser => addUser.Nickname == nickname || addUser.Username == nickname).First();
+            Discord.IGuildUser user = null;
+            try
+            {
+                user = await GetUserFromNickname(Context.Guild, nickname);
+            }
+            catch(InvalidOperationException e)
+            {
+                Console.WriteLine(e);
+                await ReplyAsync("そんなnicknameの人知りません。");
+            }
 
             string dbName = user.Nickname == null ? user.Username : user.Nickname;
 
+            IResult result = Db.AddUser(twitterId, dbName, user.Id.ToString(), Context.Guild.Id.ToString());
+            if (!result.IsSuccess)
+            {
+                await ReplyAsync(result.ErrorReason);
+                return;
+            }
             Console.WriteLine(dbName + " Added.");
-            Db.AddUser(twitterId, dbName, user.Id.ToString(), Context.Guild.Id.ToString());
-
             await ReplyAsync(String.Format("user added. Twitter: {0} Nickname: {1} Id: {2}", twitterId, dbName, user.Id.ToString()));
+        }
+        [Command("remove")]
+        public async Task Remove()
+        {
+            //AuthorのユーザーID取得
+            Discord.IGuildUser user = (Discord.IGuildUser)Context.Message.Author;
+            string dbName = user.Nickname == null ? user.Username : user.Nickname;
+            IResult result = Db.RemoveUser(dbName, user.Id.ToString(), Context.Guild.Id.ToString());
+            if (!result.IsSuccess)
+            {
+                await ReplyAsync(result.ErrorReason);
+                return;
+            }
+            Console.WriteLine(user.Nickname + " Removed.");
+            await ReplyAsync(String.Format("user Removed. Nickname: {0} Id: {1}", user.Nickname, user.Id.ToString()));
+        }
+
+        [Command("remove")]
+        public async Task Remove(string nickname)
+        {
+
+            Discord.IGuildUser user = null;
+            try
+            {
+                user = await GetUserFromNickname(Context.Guild, nickname);
+            }
+            catch (InvalidOperationException e)
+            {
+                Console.WriteLine(e);
+                await ReplyAsync("そんなnicknameの人知りません。");
+            }
+
+            string dbName = user.Nickname == null ? user.Username : user.Nickname;
+
+            IResult result = Db.RemoveUser(dbName, user.Id.ToString(), Context.Guild.Id.ToString());
+            if (!result.IsSuccess)
+            {
+                await ReplyAsync(result.ErrorReason);
+                return;
+            }
+            Console.WriteLine(user.Nickname + " Removed.");
+            await ReplyAsync(String.Format("user Removed. Nickname: {0} Id: {1}", user.Nickname, user.Id.ToString()));
         }
     }
 }

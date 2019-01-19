@@ -68,7 +68,7 @@ namespace ikanoPlayerGen2
             var result = await commands.ExecuteAsync(context, argPos, services);
 
             //実行できなかった場合
-            if (!result.IsSuccess) { await context.Channel.SendMessageAsync(result.ErrorReason); }
+            if (!result.IsSuccess) { Console.WriteLine(result.ErrorReason); }
 
         }
     }
