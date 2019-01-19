@@ -93,23 +93,23 @@ namespace ikanoPlayerGen2
         }
 
         [Command("add")]
-        public async Task Add(string twitterId)
+        public async Task<RuntimeResult> Add(string twitterId)
         {
             //AuthorのユーザーID取得
             Discord.IGuildUser user = (Discord.IGuildUser)Context.Message.Author;
             string dbName = user.Nickname == null ? user.Username : user.Nickname;
-            IResult result = Db.AddUser(twitterId, dbName, user.Id.ToString(), Context.Guild.Id.ToString());
+            RuntimeResult result = Db.AddUser(twitterId, dbName, user.Id.ToString(), Context.Guild.Id.ToString());
             if(!result.IsSuccess)
             {
-                await ReplyAsync(result.ErrorReason);
-                return;
+                return result;
             }
             Console.WriteLine(user.Nickname + " Added.");
             await ReplyAsync(String.Format("user added. Twitter: {0} Nickname: {1} Id: {2}", twitterId, user.Nickname, user.Id.ToString()));
+            return IkanoPlayerResult.FromSuccess();
         }
 
         [Command("add")]
-        public async Task Add(string twitterId, string nickname)
+        public async Task<RuntimeResult> Add(string twitterId, string nickname)
         {
             Discord.IGuildUser user = null;
             try
@@ -119,38 +119,38 @@ namespace ikanoPlayerGen2
             catch(InvalidOperationException e)
             {
                 Console.WriteLine(e);
-                await ReplyAsync("そんなnicknameの人知りません。");
+                return IkanoPlayerResult.FromError("そんなnicknameの人知りません。");
             }
 
             string dbName = user.Nickname == null ? user.Username : user.Nickname;
 
-            IResult result = Db.AddUser(twitterId, dbName, user.Id.ToString(), Context.Guild.Id.ToString());
+            RuntimeResult result = Db.AddUser(twitterId, dbName, user.Id.ToString(), Context.Guild.Id.ToString());
             if (!result.IsSuccess)
             {
-                await ReplyAsync(result.ErrorReason);
-                return;
+                return result;
             }
             Console.WriteLine(dbName + " Added.");
             await ReplyAsync(String.Format("user added. Twitter: {0} Nickname: {1} Id: {2}", twitterId, dbName, user.Id.ToString()));
+            return IkanoPlayerResult.FromSuccess();
         }
         [Command("remove")]
-        public async Task Remove()
+        public async Task<RuntimeResult> Remove()
         {
             //AuthorのユーザーID取得
             Discord.IGuildUser user = (Discord.IGuildUser)Context.Message.Author;
             string dbName = user.Nickname == null ? user.Username : user.Nickname;
-            IResult result = Db.RemoveUser(dbName, user.Id.ToString(), Context.Guild.Id.ToString());
+            RuntimeResult result = Db.RemoveUser(dbName, user.Id.ToString(), Context.Guild.Id.ToString());
             if (!result.IsSuccess)
             {
-                await ReplyAsync(result.ErrorReason);
-                return;
+                return result;
             }
             Console.WriteLine(user.Nickname + " Removed.");
             await ReplyAsync(String.Format("user Removed. Nickname: {0} Id: {1}", user.Nickname, user.Id.ToString()));
+            return IkanoPlayerResult.FromSuccess();
         }
 
         [Command("remove")]
-        public async Task Remove(string nickname)
+        public async Task<RuntimeResult> Remove(string nickname)
         {
 
             Discord.IGuildUser user = null;
@@ -161,27 +161,32 @@ namespace ikanoPlayerGen2
             catch (InvalidOperationException e)
             {
                 Console.WriteLine(e);
-                await ReplyAsync("そんなnicknameの人知りません。");
+                return IkanoPlayerResult.FromError("そんなnicknameの人知りません。");
             }
 
             string dbName = user.Nickname == null ? user.Username : user.Nickname;
 
-            IResult result = Db.RemoveUser(dbName, user.Id.ToString(), Context.Guild.Id.ToString());
+            RuntimeResult result = Db.RemoveUser(dbName, user.Id.ToString(), Context.Guild.Id.ToString());
             if (!result.IsSuccess)
             {
-                await ReplyAsync(result.ErrorReason);
-                return;
+                return result;
             }
             Console.WriteLine(user.Nickname + " Removed.");
             await ReplyAsync(String.Format("user Removed. Nickname: {0} Id: {1}", user.Nickname, user.Id.ToString()));
+            return IkanoPlayerResult.FromSuccess();
         }
 
         [Command("show")]
-        public async Task Show()
+        public async Task<RuntimeResult> Show()
         {
             List<IkanoPlayerUser> registeredList;
             registeredList = Db.GetAllUserInServer(Context.Guild.Id.ToString());
             string postStr = "";
+
+            if(registeredList.Count == 0)
+            {
+                return IkanoPlayerResult.FromError("このサーバーに登録されている人がいません。");
+            }
 
             foreach(IkanoPlayerUser user in registeredList)
             {
@@ -189,6 +194,7 @@ namespace ikanoPlayerGen2
             }
 
             await ReplyAsync(postStr);
+            return IkanoPlayerResult.FromSuccess();
         }
     }
 }

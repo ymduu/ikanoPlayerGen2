@@ -67,8 +67,9 @@ namespace ikanoPlayerGen2
             // 実行
             var result = await commands.ExecuteAsync(context, argPos, services);
 
-            //実行できなかった場合
+            //実行できなかった場合、IkanoPlayer由来のエラーメッセージだけdiscordに投げる
             if (!result.IsSuccess) { Console.WriteLine(result.ErrorReason); }
+            if (!result.IsSuccess && result is IkanoPlayerResult) { await context.Channel.SendMessageAsync(result.ErrorReason); }
 
         }
     }
