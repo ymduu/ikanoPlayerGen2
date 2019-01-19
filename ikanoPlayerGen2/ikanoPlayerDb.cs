@@ -120,6 +120,29 @@ namespace ikanoPlayerGen2
             }
         }
 
+        internal List<IkanoPlayerUser> GetAllUserInServer(string discordServerId)
+        {
+            List<IkanoPlayerUser> retList = new List<IkanoPlayerUser>();
+
+            using (var cmd = new SQLiteCommand(Connection))
+            {
+                
+                cmd.CommandText = "SELECT * from ikanoplayer_user WHERE discord_server_id = :discordServerId";
+                cmd.Parameters.Add("discordServerId", System.Data.DbType.String).Value = discordServerId;
+                using (SQLiteDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        IkanoPlayerUser user = new IkanoPlayerUser(reader["twitter_id"].ToString(), reader["discord_display_name"].ToString(), reader["discord_id"].ToString(), reader["discord_server_id"].ToString());
+                        retList.Add(user);
+                    }
+                }
+
+            }
+            return retList;
+        }
+    
+
         public void Dispose()
         {
             Connection.Close();

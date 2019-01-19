@@ -175,5 +175,20 @@ namespace ikanoPlayerGen2
             Console.WriteLine(user.Nickname + " Removed.");
             await ReplyAsync(String.Format("user Removed. Nickname: {0} Id: {1}", user.Nickname, user.Id.ToString()));
         }
+
+        [Command("show")]
+        public async Task Show()
+        {
+            List<IkanoPlayerUser> registeredList;
+            registeredList = Db.GetAllUserInServer(Context.Guild.Id.ToString());
+            string postStr = "";
+
+            foreach(IkanoPlayerUser user in registeredList)
+            {
+                postStr += user.ToString();
+            }
+
+            await ReplyAsync(postStr);
+        }
     }
 }

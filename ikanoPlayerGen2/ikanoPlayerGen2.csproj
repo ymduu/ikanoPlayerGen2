@@ -184,6 +184,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="IkanoPlayerCommands.cs" />
     <Compile Include="IkanoPlayerDb.cs" />
+    <Compile Include="IkanoPlayerUser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
