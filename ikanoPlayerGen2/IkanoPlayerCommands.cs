@@ -44,7 +44,7 @@ namespace ikanoPlayerGen2
             Console.WriteLine("IkanoPlayerGen2 Login OK");
         }
 
-        public static void GetReplyThreadBody()
+        public static async void GetReplyThreadBody()
         {
             //フォローしている人だけ取得
             var ids = IkanoPlayerTokens.Friends.Ids(screen_name: Constants.TWITTER_BOT_SCREEN_NAME);
@@ -57,10 +57,30 @@ namespace ikanoPlayerGen2
                     Console.WriteLine("null"); 
                     continue;
                 }
-
+                //UserStreamっぽく眺めてニコニコする用
+                /*
                 if (idList.Contains((long)m.User.Id))
                 {
                     Console.WriteLine("{0}: {1}", m.User.ScreenName, m.Text);
+                }
+                */
+
+                if (m.InReplyToStatusId.HasValue)
+                {
+                    string channelIdStr = Db.GetChannelFromTweet(m.InReplyToStatusId.ToString());
+
+                    if(channelIdStr == null)
+                    {
+                        continue;
+                    }
+
+                    ulong channelId = new ulong();
+                    if (ulong.TryParse(channelIdStr, out channelId))
+                    {
+                        var channel = ikanoPlayerGen2.Program.client.GetChannel(channelId) as Discord.IMessageChannel;
+                        string sendUrl = string.Format("https://twitter.com/{0}/status/{1}", m.User.ScreenName, m.Id.ToString());
+                        await channel.SendMessageAsync("ikanoplayer got reply: \n" + sendUrl);
+                    }
                 }
                 
             }

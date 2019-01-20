@@ -155,6 +155,25 @@ namespace ikanoPlayerGen2
             }
             return IkanoPlayerResult.FromSuccess();
         }
+
+        public string GetChannelFromTweet(string tweetId)
+        {
+            using (var cmd = new SQLiteCommand(Connection))
+            {
+
+                cmd.CommandText = "SELECT * from ikanoplayer_tweet WHERE post_id = :tweetId";
+                cmd.Parameters.Add("tweetId", System.Data.DbType.String).Value = tweetId;
+                using (SQLiteDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return reader["discord_channel_id"].ToString();
+                    }
+                }
+
+            }
+            return null;
+        }
     
 
         public void Dispose()

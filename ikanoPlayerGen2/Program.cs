@@ -25,10 +25,12 @@ namespace ikanoPlayerGen2
 
         public async Task MainAsync()
         {
+            //認証をしたいときに実行
+            //IkanoPlayerCommands.GetAuthInfo();
 
             IkanoPlayerCommands.Init();
 
-            //IkanoPlayerCommands.GetReplyThreadBody();
+            
 
             var twitterTask = Task.Run(() =>
             {
