@@ -8,10 +8,10 @@ namespace ikanoPlayerGen2
 {
     class IkanoPlayerUser
     {
-        string TwitterId;
-        string DiscordDisplayName;
-        string DiscordId;
-        string DiscordServerId;
+        public string TwitterId;
+        public string DiscordDisplayName;
+        public string DiscordId;
+        public string DiscordServerId;
 
         public IkanoPlayerUser(string twitterId, string discordDisplayName, string discordId, string discordServerId)
         {

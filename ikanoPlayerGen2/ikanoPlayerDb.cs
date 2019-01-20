@@ -34,6 +34,14 @@ namespace ikanoPlayerGen2
                     "discord_server_id TEXT NOT NULL)";
                     
                 cmd.ExecuteNonQuery();
+
+                cmd.CommandText = "CREATE TABLE IF NOT EXISTS ikanoplayer_tweet(" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "post_id TEXT NOT NULL," +
+                    "discord_server_id TEXT NOT NULL," +
+                    "discord_channel_id TEXT NOT NULL)";
+
+                cmd.ExecuteNonQuery();
             }
 
         }
@@ -108,6 +116,44 @@ namespace ikanoPlayerGen2
 
             }
             return retList;
+        }
+
+        internal RuntimeResult AddInvite(List<IkanoPlayerTweet> inviteList)
+        {
+            //既存のinviteを削除
+            using (var cmd = new SQLiteCommand(Connection))
+            {
+                //既にそのチャンネルでinviteが行われているかをチェック 
+                cmd.CommandText = "SELECT COUNT(*) from ikanoplayer_tweet WHERE discord_channel_id = :discordChannelId and discord_server_id = :discordServerId";
+                cmd.Parameters.Add("discordChannelId", System.Data.DbType.String).Value = inviteList[0].DiscordChannelId;
+                cmd.Parameters.Add("discordServerId", System.Data.DbType.String).Value = inviteList[0].DiscordServerId;
+                long exists = (long)cmd.ExecuteScalar();
+
+                if (exists >= 1)
+                {
+                    //既にされているinviteを削除
+                    cmd.CommandText = "DELETE FROM ikanoplayer_tweet WHERE discord_channel_id = :discordChannelId and discord_server_id = :discordServerId";
+                    cmd.Parameters.Add("discordChannelId", System.Data.DbType.String).Value = inviteList[0].DiscordChannelId;
+                    cmd.Parameters.Add("discordServerId", System.Data.DbType.String).Value = inviteList[0].DiscordServerId;
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            foreach (IkanoPlayerTweet tweet in inviteList)
+            {
+
+                using (var cmd = new SQLiteCommand(Connection))
+                {
+                    cmd.CommandText = "INSERT INTO ikanoplayer_tweet(post_id, discord_channel_id, discord_server_id) VALUES(:postId, :discordChannelId, :discordServerId)";
+                    cmd.Parameters.Add("postId", System.Data.DbType.String).Value = tweet.PostId;
+                    cmd.Parameters.Add("discordChannelId", System.Data.DbType.String).Value = tweet.DiscordChannelId;
+                    cmd.Parameters.Add("discordServerId", System.Data.DbType.String).Value = tweet.DiscordServerId;
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            return IkanoPlayerResult.FromSuccess();
         }
     
 

@@ -196,5 +196,42 @@ namespace ikanoPlayerGen2
             await ReplyAsync(postStr);
             return IkanoPlayerResult.FromSuccess();
         }
+        [Command("invite")]
+        public async Task<RuntimeResult> Invite(string inviteStr)
+        {
+            List<IkanoPlayerUser> registeredList;
+            registeredList = Db.GetAllUserInServer(Context.Guild.Id.ToString());
+            string postStr = "";
+
+            if (registeredList.Count == 0)
+            {
+                return IkanoPlayerResult.FromError("このサーバーに登録されている人がいません。");
+            }
+
+            List<IkanoPlayerTweet> ikanoPlayerInvites = new List<IkanoPlayerTweet>();
+
+            foreach (IkanoPlayerUser user in registeredList)
+            {
+                postStr += ("@" + user.TwitterId + " ");
+                if(postStr.Length >= 100)
+                {
+                    StatusResponse response = await IkanoPlayerTokens.Statuses.UpdateAsync(postStr + inviteStr);
+                    postStr = "";
+                    IkanoPlayerTweet tweet = new IkanoPlayerTweet(response.Id.ToString(), Context.Guild.Id.ToString(), Context.Channel.Id.ToString());
+                    ikanoPlayerInvites.Add(tweet);
+                }
+            }
+
+            if(postStr != "")
+            {
+                StatusResponse response = await IkanoPlayerTokens.Statuses.UpdateAsync(postStr + inviteStr);
+                postStr = "";
+                IkanoPlayerTweet tweet = new IkanoPlayerTweet(response.Id.ToString(), Context.Guild.Id.ToString(), Context.Channel.Id.ToString());
+                ikanoPlayerInvites.Add(tweet);
+            }
+            Db.AddInvite(ikanoPlayerInvites);
+            await ReplyAsync("inviteが送られました");
+            return IkanoPlayerResult.FromSuccess();
+        }
     }
 }
