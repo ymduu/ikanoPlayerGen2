@@ -153,6 +153,24 @@ namespace ikanoPlayerGen2
             await ReplyAsync(String.Format("user added. Twitter: {0} Nickname: {1} Id: {2}", twitterId, dbName, user.Id.ToString()));
             return IkanoPlayerResult.FromSuccess();
         }
+
+        [Command("addById")]
+        public async Task<RuntimeResult> AddById(string twitterId, ulong discordId)
+        {
+            Discord.IGuildUser user = await Context.Guild.GetUserAsync(discordId) as Discord.IGuildUser;
+
+            string dbName = user.Nickname == null ? user.Username : user.Nickname;
+
+            RuntimeResult result = Db.AddUser(twitterId, dbName, user.Id.ToString(), Context.Guild.Id.ToString());
+            if (!result.IsSuccess)
+            {
+                return result;
+            }
+            Console.WriteLine(dbName + " Added.");
+            await ReplyAsync(String.Format("user added. Twitter: {0} Nickname: {1} Id: {2}", twitterId, dbName, user.Id.ToString()));
+            return IkanoPlayerResult.FromSuccess();
+        }
+
         [Command("remove")]
         public async Task<RuntimeResult> Remove()
         {

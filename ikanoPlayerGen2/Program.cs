@@ -56,8 +56,6 @@ namespace ikanoPlayerGen2
             Console.WriteLine("{0} {1}:{2}", message.Channel.Name, message.Author.Username, message);
 
             if (message == null) { return; }
-            // コメントがユーザーかBotかの判定
-            if (message.Author.IsBot) { return; }
 
             int argPos = 0;
 
