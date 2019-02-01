@@ -102,18 +102,39 @@ namespace ikanoPlayerGen2
             }
         }
 
+        [Command("help"), Summary("助けはこないよ")]
+        public async Task Help()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("*ikanoplayer2*");
+            sb.AppendLine();
+            sb.AppendLine("ikanoplayer2からはコマンドの先頭に`!`をつけます。これさえ覚えておけば旧ikanoplayerと大差ないです。");
+
+
+            var builder = new Discord.EmbedBuilder();
+            foreach (var c in Program.commands.Commands)
+            {
+                builder.AddField(
+                    c.Aliases.First() + " " + string.Join(" ", c.Parameters.Select(x => $"[{x}]")),
+                    (c.Summary ?? "no description") + "\n" +
+                        string.Join("\n", c.Parameters.Select(x => $"[{x.Name}]: {x.Summary}"))
+                );
+            }
+            await ReplyAsync(sb.ToString(), false, builder.Build());
+        }
+
         /// <summary>
         /// テスト用、パラメータをechoするだけ
         /// </summary>
         /// <returns>空白区切りのパラメータ</returns>
-        [Command("echoParams")]
+        [Command("echoParams"), Summary("複数パラメータに即対応できてすごい(すごい)")]
         public async Task EchoParams(string param1, string param2, string param3)
         {
             await Context.Channel.SendMessageAsync($"these are params{param1}, {param2}, {param3}");
         }
 
-        [Command("add")]
-        public async Task<RuntimeResult> Add(string twitterId)
+        [Command("add"), Summary("投稿者を追加します。")]
+        public async Task<RuntimeResult> Add([Summary("ツイッタ～のID")] string twitterId)
         {
             //AuthorのユーザーID取得
             Discord.IGuildUser user = (Discord.IGuildUser)Context.Message.Author;
@@ -128,8 +149,8 @@ namespace ikanoPlayerGen2
             return IkanoPlayerResult.FromSuccess();
         }
 
-        [Command("add")]
-        public async Task<RuntimeResult> Add(string twitterId, string nickname)
+        [Command("add"), Summary("自分以外を追加したいとき用です。表示名(nickname)とか言いつつユーザ名でも解決します。")]
+        public async Task<RuntimeResult> Add([Summary("ツイッタ～のID")] string twitterId, [Summary("表示名")] string nickname)
         {
             Discord.IGuildUser user = null;
             try
@@ -154,8 +175,8 @@ namespace ikanoPlayerGen2
             return IkanoPlayerResult.FromSuccess();
         }
 
-        [Command("addById")]
-        public async Task<RuntimeResult> AddById(string twitterId, ulong discordId)
+        [Command("addById"), Summary("移行するための機能なので使わなくていいです。")]
+        public async Task<RuntimeResult> AddById([Summary("ツイッタ～のID")] string twitterId, [Summary("ディスコ～ドのID")] ulong discordId)
         {
             Discord.IGuildUser user = await Context.Guild.GetUserAsync(discordId) as Discord.IGuildUser;
 
@@ -171,7 +192,7 @@ namespace ikanoPlayerGen2
             return IkanoPlayerResult.FromSuccess();
         }
 
-        [Command("remove")]
+        [Command("remove"), Summary("投稿者をデータベースから消します。")]
         public async Task<RuntimeResult> Remove()
         {
             //AuthorのユーザーID取得
@@ -187,8 +208,8 @@ namespace ikanoPlayerGen2
             return IkanoPlayerResult.FromSuccess();
         }
 
-        [Command("remove")]
-        public async Task<RuntimeResult> Remove(string nickname)
+        [Command("remove"), Summary("自分以外を消したいときにはremoveに表示名を指定することもできます。add同様ユーザ名でも解決します。")]
+        public async Task<RuntimeResult> Remove([Summary("表示名")] string nickname)
         {
 
             Discord.IGuildUser user = null;
@@ -214,7 +235,7 @@ namespace ikanoPlayerGen2
             return IkanoPlayerResult.FromSuccess();
         }
 
-        [Command("show")]
+        [Command("show"), Summary("登録されている人の一覧を表示します。")]
         public async Task<RuntimeResult> Show()
         {
             List<IkanoPlayerUser> registeredList;
@@ -234,8 +255,8 @@ namespace ikanoPlayerGen2
             await ReplyAsync(postStr);
             return IkanoPlayerResult.FromSuccess();
         }
-        [Command("invite")]
-        public async Task<RuntimeResult> Invite(string inviteStr)
+        [Command("invite"), Summary("twitter にinviteを送ります。")]
+        public async Task<RuntimeResult> Invite([Summary("リプライとして送る文字列")] string inviteStr)
         {
             List<IkanoPlayerUser> registeredList;
             registeredList = Db.GetAllUserInServer(Context.Guild.Id.ToString());
@@ -270,6 +291,12 @@ namespace ikanoPlayerGen2
             Db.AddInvite(ikanoPlayerInvites);
             await ReplyAsync("inviteが送られました");
             return IkanoPlayerResult.FromSuccess();
+        }
+
+        [Command("invite"), Summary("twitter にinviteを送ります。パラメータがない場合はリプライのみ送信します。")]
+        public async Task<RuntimeResult> Invite()
+        {
+            return await Invite("");
         }
     }
 }
