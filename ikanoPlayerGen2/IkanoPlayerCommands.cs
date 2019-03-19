@@ -46,43 +46,57 @@ namespace ikanoPlayerGen2
 
         public static async void GetReplyThreadBody()
         {
-            //フォローしている人だけ取得
-            var ids = IkanoPlayerTokens.Friends.Ids(screen_name: Constants.TWITTER_BOT_SCREEN_NAME);
-            List<Int64> idList = ids.ToList<Int64>();
 
-            foreach (var m in IkanoPlayerTokens.Streaming.Filter(follow: idList).OfType<CoreTweet.Streaming.StatusMessage>().Select(x => x.Status))
+
+            while (true)
             {
-                if (m.User.Id == null) 
+                try
                 {
-                    Console.WriteLine("null"); 
-                    continue;
-                }
-                //UserStreamっぽく眺めてニコニコする用
-                /*
-                if (idList.Contains((long)m.User.Id))
-                {
-                    Console.WriteLine("{0}: {1}", m.User.ScreenName, m.Text);
-                }
-                */
+                    Init();
 
-                if (m.InReplyToStatusId.HasValue)
-                {
-                    string channelIdStr = Db.GetChannelFromTweet(m.InReplyToStatusId.ToString());
-
-                    if(channelIdStr == null)
+                    //フォローしている人だけ取得
+                    var ids = IkanoPlayerTokens.Friends.Ids(screen_name: Constants.TWITTER_BOT_SCREEN_NAME);
+                    List<Int64> idList = ids.ToList<Int64>();
+                    foreach (var m in IkanoPlayerTokens.Streaming.Filter(follow: idList).OfType<CoreTweet.Streaming.StatusMessage>().Select(x => x.Status))
                     {
-                        continue;
-                    }
+                        if (m.User.Id == null)
+                        {
+                            Console.WriteLine("null");
+                            continue;
+                        }
+                        //UserStreamっぽく眺めてニコニコする用
+                        /*
+                        if (idList.Contains((long)m.User.Id))
+                        {
+                            Console.WriteLine("{0}: {1}", m.User.ScreenName, m.Text);
+                        }
+                        */
 
-                    ulong channelId = new ulong();
-                    if (ulong.TryParse(channelIdStr, out channelId))
-                    {
-                        var channel = ikanoPlayerGen2.Program.client.GetChannel(channelId) as Discord.IMessageChannel;
-                        string sendUrl = string.Format("https://twitter.com/{0}/status/{1}", m.User.ScreenName, m.Id.ToString());
-                        await channel.SendMessageAsync("ikanoplayer got reply: \n" + sendUrl);
+                        if (m.InReplyToStatusId.HasValue)
+                        {
+                            string channelIdStr = Db.GetChannelFromTweet(m.InReplyToStatusId.ToString());
+
+                            if (channelIdStr == null)
+                            {
+                                continue;
+                            }
+
+                            ulong channelId = new ulong();
+                            if (ulong.TryParse(channelIdStr, out channelId))
+                            {
+                                var channel = ikanoPlayerGen2.Program.client.GetChannel(channelId) as Discord.IMessageChannel;
+                                string sendUrl = string.Format("https://twitter.com/{0}/status/{1}", m.User.ScreenName, m.Id.ToString());
+                                await channel.SendMessageAsync("ikanoplayer got reply: \n" + sendUrl);
+                            }
+                        }
+
                     }
                 }
-                
+                catch(System.IO.IOException e)
+                {
+                    Console.WriteLine("Twitter Disconnected. try after 1 min.");
+                    await Task.Delay(60000);
+                }
             }
 
         }

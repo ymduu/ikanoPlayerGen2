@@ -28,7 +28,7 @@ namespace ikanoPlayerGen2
             //認証をしたいときに実行
             //IkanoPlayerCommands.GetAuthInfo();
 
-            IkanoPlayerCommands.Init();
+            //IkanoPlayerCommands.Init();
 
             
 
