@@ -97,6 +97,11 @@ namespace ikanoPlayerGen2
                     Console.WriteLine("Twitter Disconnected. try after 1 min.");
                     await Task.Delay(60000);
                 }
+                catch(Exception e)
+                {
+                    Console.WriteLine("Unknown Exception");
+                    Console.WriteLine(e.ToString());
+                }
             }
 
         }
